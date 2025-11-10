@@ -38,7 +38,7 @@ export const requiereAdmin = (req, res, next) => {
   if (!req.usuario) {
     return res.status(401).json({ mensaje: "No se encontró información del usuario" });
   }
-  if (req.usuario.rol !== "administrador") {
+  if (req.usuario.rol !== "ADMIN") {
     return res.status(403).json({ mensaje: "Acceso denegado: se requiere rol de administrador" });
   }
   next();

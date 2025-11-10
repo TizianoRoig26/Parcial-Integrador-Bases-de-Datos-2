@@ -11,11 +11,11 @@ import {validarToken, requiereAdmin} from "../middleware/jwt.js";
 
 const router = express.Router();
 
-router.post("/", crearCategoria, validarToken, requiereAdmin);
-router.get("/", listarCategorias, validarToken, requiereAdmin);
-router.get("/stats", statsCategorias, validarToken, requiereAdmin);
-router.get("/:id", obtenerCategoria, validarToken, requiereAdmin);
-router.put("/:id", actualizarCategoria, validarToken, requiereAdmin);
-router.patch("/eliminar/:id", eliminarCategoria, validarToken, requiereAdmin);
+router.post("/", validarToken, requiereAdmin, crearCategoria);
+router.get("/", validarToken, requiereAdmin, listarCategorias);
+router.get("/stats", validarToken, requiereAdmin, statsCategorias);
+router.get("/:id", validarToken, requiereAdmin, obtenerCategoria);
+router.put("/:id", validarToken, requiereAdmin, actualizarCategoria);
+router.patch("/eliminar/:id", validarToken, requiereAdmin, eliminarCategoria);
 
 export default router;

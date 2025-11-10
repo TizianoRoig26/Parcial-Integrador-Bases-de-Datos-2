@@ -4,40 +4,48 @@ import Producto from "../models/Producto.js";
 export const crearOrden = async (req, res, next) => {
   try {
     const { usuario, productos, metodoPago } = req.body;
-    if (!usuario || !productos || !metodoPago) {
+
+    if (!usuario || !productos || productos.length === 0 || !metodoPago) {
       return res.status(400).json({ mensaje: "Faltan datos requeridos" });
     }
+
     let total = 0;
     const productosConPrecio = [];
+
     for (const p of productos) {
       const productoDB = await Producto.findById(p.producto);
       if (!productoDB) {
-        return res.status(400).json({ 
-          mensaje: `El producto con ID ${p.producto} no existe` 
-        });
+        throw new Error(`El producto con ID ${p.producto} no existe`);
       }
-      const subtotal = productoDB.precio * p.cantidad;
+
+      const precioUnitario = productoDB.precio;
+      const subtotal = precioUnitario * p.cantidad;
       total += subtotal;
+
       productosConPrecio.push({
-        nombre: productoDB.nombre,
-        productoid: productoDB._id,
+        producto: productoDB._id,
         cantidad: p.cantidad,
-        precioUnitario: productoDB.precio,
-        subtotal
+        precioUnitario
       });
     }
-    const nuevaOrden = await Pedidos.create({
+
+    const nuevaOrden = await Pedido.create({
       usuario,
-      metodoPago,
       productos: productosConPrecio,
-      total
+      total,
+      metodoPago
     });
+
     res.status(201).json({
-      mensaje: "Pedido creado exitosamente",
+      mensaje: "Pedido creado",
       orden: nuevaOrden
     });
+
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      mensaje: "Error al crear el pedido",
+      error: error.message
+    });
   }
 };
 

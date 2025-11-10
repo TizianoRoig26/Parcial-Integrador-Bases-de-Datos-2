@@ -13,14 +13,14 @@ import {validarToken, requiereAdmin} from "../middleware/jwt.js";
 const router = express.Router();
 
 
-router.post("/", crearOrden, validarToken);
-router.get("/", obtenerOrdenes, validarToken);
-router.get("/:id", obtenerOrdenPorId, validarToken);
-router.put("/:id", actualizarOrden, validarToken, requiereAdmin);
-router.put("/eliminar/:id", eliminarOrden, validarToken, requiereAdmin);
+router.post("/", validarToken, crearOrden);
+router.get("/", validarToken, obtenerOrdenes);
+router.get("/:id", validarToken, obtenerOrdenPorId);
+router.put("/:id", validarToken, requiereAdmin, actualizarOrden);
+router.put("/eliminar/:id", validarToken, requiereAdmin, eliminarOrden);
 
-router.get("/usuario/:userId", obtenerOrdenesPorUsuario, validarToken, requiereAdmin);
-router.get("/stats/data", obtenerStatsOrdenes, validarToken, requiereAdmin);
-router.patch("/:id/status", actualizarEstadoOrden, validarToken, requiereAdmin);
+router.get("/usuario/:userId", validarToken, requiereAdmin, obtenerOrdenesPorUsuario);
+router.get("/stats/data", validarToken, requiereAdmin, obtenerStatsOrdenes);
+router.patch("/:id/status", validarToken, requiereAdmin, actualizarEstadoOrden);
 
 export default router;

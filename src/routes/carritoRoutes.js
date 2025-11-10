@@ -13,13 +13,13 @@ import {validarToken, requiereAdmin} from "../middleware/jwt.js";
 
 const router = express.Router();
 
-router.post("/", crearCarrito, validarToken);
-router.get("/", listarCarritos, validarToken);
-router.get("/:id", obtenerCarrito, validarToken);
-router.patch("/:id", actualizarCarrito, validarToken);
-router.patch("/eliminar/:id", eliminarCarrito, validarToken);
-router.get("/:usuarioId/total", totalCarrito, validarToken);
-router.get("/:usuarioId", mostrarCarritoUsuario, validarToken);
-router.post("/agregarProducto", agregarProductosAlCarrito, validarToken);
+router.post("/", validarToken, crearCarrito);
+router.get("/", validarToken, listarCarritos);
+router.get("/:id", validarToken, obtenerCarrito);
+router.patch("/:id", validarToken, actualizarCarrito);
+router.patch("/eliminar/:id", validarToken, eliminarCarrito);
+router.get("/:usuarioId/total", validarToken, totalCarrito);
+router.get("/:usuarioId", validarToken, mostrarCarritoUsuario);
+router.post("/agregarProducto", validarToken, agregarProductosAlCarrito);
 
 export default router;

@@ -9,7 +9,7 @@ export const crearCategoria = async (req, res, next) => {
     }
     res.status(200).json({
       success: true,
-      data: categorias
+      data: categoria
     });
   } catch (error) {
     next(error);
