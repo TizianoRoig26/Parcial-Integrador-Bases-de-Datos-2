@@ -43,7 +43,7 @@ export const obtenerResena = async (req, res, next) => {
 
 export const actualizarResena = async (req, res, next) => {
   try{
-  const resena = await Resena.findById(req.params.id);
+  let resena = await Resena.findById(req.params.id);
   if(!resena || resena.eliminado) {
     return res.status(404).json({ mensaje: "No se encontraron resenas para el producto" });
   }

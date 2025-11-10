@@ -9,7 +9,7 @@ export const generarToken = (usuario) => {
     clave,
     { expiresIn: "1h" }
   );
-};
+}; 
 
 // Validar token
 export const validarToken = (req, res, next) => {

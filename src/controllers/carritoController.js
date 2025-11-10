@@ -110,47 +110,56 @@ export const totalCarrito = async (req, res, next) => {
   }
 };
 
-export const agregarProductosAlCarrito = async (req, res, next) => {
+export const agregarProductosAlCarrito = async (req, res) => {
   try {
-    const { carritoId, productos } = req.body;
-    if (!carritoId || !productos || !Array.isArray(productos)) {
-      return res.status(400).json({ success: false, error: "Datos inválidos" });
+    const { productoId, cantidad } = req.body;
+    const usuarioId = req.usuario._id || req.usuario.id;
+
+    if (!usuarioId) {
+      return res.status(401).json({ mensaje: "Usuario no autenticado" });
     }
 
-    const carrito = await Carrito.findById(carritoId);
+    if (!productoId) {
+      return res.status(400).json({ mensaje: "El ID del producto es obligatorio" });
+    }
+
+    let carrito = await Carrito.findOne({ usuarioId });
+
     if (!carrito) {
-      return res.status(404).json({ success: false, error: "Carrito no encontrado" });
-    }
-
-    for (const { productoId, cantidad } of productos) {
+      carrito = new Carrito({
+        usuarioId, 
+        productos: [{ producto: productoId, cantidad }]
+      });
+    } else {
       const productoExistente = carrito.productos.find(
-        p => p.producto.toString() === productoId
+        (p) => p.producto.toString() === productoId
       );
+
       if (productoExistente) {
-        productoExistente.cantidad += cantidad;
+        productoExistente.cantidad += cantidad || 1;
       } else {
         carrito.productos.push({ producto: productoId, cantidad });
       }
     }
 
     await carrito.save();
-    const carritoActualizado = await Carrito.findById(carritoId)
-    .populate("productos.producto"); // trae todos los campos del producto
-    res.json({
-      success: true,
-      mensaje: "Productos agregados correctamente",
-      data: carrito
-    });
+    res.status(200).json(carrito);
   } catch (error) {
-    next(error);
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al agregar producto al carrito" });
   }
 };
 
+
 export const eliminarCarritoU = async (carritoId) => {
-  if (!carritoId) return null;
-  return await Carrito.findByIdAndUpdate(
-    carritoId,
-    { eliminado: true },
-    { new: true }
-  );
+  try {
+    if (!carritoId) return null;
+    return await Carrito.findByIdAndUpdate(
+      carritoId,
+      { eliminado: true },
+      { new: true }
+    );
+  } catch (error) {
+    throw new Error("Error al eliminar carrito");
+  }
 };

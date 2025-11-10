@@ -17,6 +17,6 @@ router.get("/producto/:productId", resenasPorProducto);
 router.get("/top", topResenas);
 router.get("/:id", obtenerResena);
 router.put("/:id", validarToken, requiereAdmin, actualizarResena);
-router.delete("/:id", validarToken, requiereAdmin, eliminarResena);
+router.patch("/eliminar/:id", validarToken, requiereAdmin, eliminarResena);
 
 export default router;

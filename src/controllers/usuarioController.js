@@ -25,7 +25,8 @@ export const crearUsuario = async (req, res, next) => {
     const token = generarToken(usuario);
     res.status(201).json({
       success: true,
-      data: usuario, token
+      data: usuario,
+      token
     });
   } catch (err) {
      next(err);

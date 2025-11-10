@@ -3,7 +3,11 @@ import mongoose from "mongoose";
 const usuarioSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  direccion: { type: String, required: false },
+  direccion: { 
+    calle: { type: String, required: true },
+    numero: { type: String, required: true },
+    ciudad: { type: String, required: true },
+   },
   telefono: { type: String, required: false },
   contrasenia: {type: String, require: true},
   rol: { type: String, enum: ["CLIENTE", "ADMIN"], default: "CLIENTE" },
