@@ -9,17 +9,17 @@ import {
   productosTop,
   actualizarStock
 } from "../controllers/productoController.js";
-import { act } from "react";
+import {requiereAdmin, validarToken} from "../middleware/jwt.js";
 
 const router = express.Router();
 
-router.post("/", crearProducto);
-router.get("/", listarProductos);            // listar con categoría
-router.post("/filtro", filtrarProductos);     // filtro por precio/marca/categoria
-router.get("/top", productosTop);           // top por promedio de reseñas
+router.get("/", listarProductos);           
+router.post("/filtro", filtrarProductos, validarToken, requiereAdmin);     
+router.get("/top", productosTop, validarToken, requiereAdmin);           
 router.get("/:id", obtenerProducto);
-router.patch("/:id/stock", actualizarStock); 
-router.put("/:id", actualizarProducto);
-router.delete("/:id", eliminarProducto);
+router.patch("/:id/stock", actualizarStock, validarToken, requiereAdmin); 
+router.put("/actualizar/:id", actualizarProducto, validarToken, requiereAdmin);
+router.patch("/eliminar/:id", eliminarProducto, validarToken, requiereAdmin);
+router.post("/", crearProducto, validarToken, requiereAdmin);
 
 export default router;

@@ -9,19 +9,18 @@ import {
   obtenerStatsOrdenes,
   actualizarEstadoOrden
 } from "../controllers/pedidoController.js";
-
+import {validarToken, requiereAdmin} from "../middleware/jwt.js";
 const router = express.Router();
 
-// CRUD normal
-router.post("/", crearOrden);
-router.get("/", obtenerOrdenes);
-router.get("/:id", obtenerOrdenPorId);
-router.put("/:id", actualizarOrden);
-router.delete("/:id", eliminarOrden);
 
-// Rutas extras
-router.get("/user/:userId", obtenerOrdenesPorUsuario);
-router.get("/stats/data", obtenerStatsOrdenes);
-router.patch("/:id/status", actualizarEstadoOrden);
+router.post("/", crearOrden, validarToken);
+router.get("/", obtenerOrdenes, validarToken);
+router.get("/:id", obtenerOrdenPorId, validarToken);
+router.put("/:id", actualizarOrden, validarToken, requiereAdmin);
+router.put("/eliminar/:id", eliminarOrden, validarToken, requiereAdmin);
+
+router.get("/usuario/:userId", obtenerOrdenesPorUsuario, validarToken, requiereAdmin);
+router.get("/stats/data", obtenerStatsOrdenes, validarToken, requiereAdmin);
+router.patch("/:id/status", actualizarEstadoOrden, validarToken, requiereAdmin);
 
 export default router;

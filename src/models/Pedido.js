@@ -5,17 +5,23 @@ const pedidoSchema = new mongoose.Schema({
   productos: [
     {
       producto: { type: mongoose.Schema.Types.ObjectId, ref: "Producto", required: true },
-      cantidad: { type: Number, required: true },
+      cantidad: { type: Number, required: true, min: 1},
       precioUnitario: { type: Number, required: true }
     }
   ],
-  total: { type: Number, required: true },
+  total: { type: Number, min: 0},
   estado: {
     type: String,
-    enum: ["PENDIENTE", "CONFIRMADO", "CANCELADO", "TERMINADO"],
+    enum: ["PENDIENTE", "CONFIRMADO", "CANCELADO", "TERMINADO", "PROCESO"],
     default: "PENDIENTE"
   },
-  fecha: { type: Date, default: Date.now }
+  metodoPago: {
+    type: String,
+    enum: ["EFECTIVO", "TRANSFERENCIA", "TARJETA"],
+    require: true
+  },
+  fecha: { type: Date, default: Date.now },
+  eliminado: { type: Boolean, default: false }
 });
 
 export default mongoose.model("Pedido", pedidoSchema);

@@ -2,12 +2,13 @@ import mongoose from "mongoose";
 
 const carritoSchema = new mongoose.Schema({
   usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario", required: true },
-  productos: [
+    productos: [
     {
-      productoId: { type: mongoose.Schema.Types.ObjectId, ref: "Producto" },
-      cantidad: { type: Number, default: 1 }
+    producto: { type: mongoose.Schema.Types.ObjectId, ref: "Producto", required: true },
+    cantidad: { type: Number, default: 1 }
     }
-  ]
-}, { timestamps: true });
+    ],
+  eliminado: { type: Boolean, default: false }
+}, { timestamps: false });
 
 export default mongoose.model("Carrito", carritoSchema);

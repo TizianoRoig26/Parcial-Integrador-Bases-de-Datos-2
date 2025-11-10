@@ -1,116 +1,125 @@
-import Orden from "../models/Pedidos.js";
+import Pedido from "../models/Pedido.js";
 import Producto from "../models/Producto.js";
 
-// Crear pedido
-export const crearOrden = async (req, res) => {
+export const crearOrden = async (req, res, next) => {
   try {
-    const usuarioId = req.body.usuarioId;
-    const productos = req.body.productos;
-    // Creamos un array para guardar productos con su precio
-    let productosConPrecio = [];
-    for (let i = 0; i < productos.length; i++) {
-      const p = productos[i];
-      const prodDB = await Producto.findById(p.productoId);
-      if (!prodDB) {
-        return res.status(404).json({ mensaje: "Producto no encontrado: " + p.productoId });
+    const { usuario, productos, metodoPago } = req.body;
+    if (!usuario || !productos || !metodoPago) {
+      return res.status(400).json({ mensaje: "Faltan datos requeridos" });
+    }
+    let total = 0;
+    const productosConPrecio = [];
+    for (const p of productos) {
+      const productoDB = await Producto.findById(p.producto);
+      if (!productoDB) {
+        return res.status(400).json({ 
+          mensaje: `El producto con ID ${p.producto} no existe` 
+        });
       }
+      const subtotal = productoDB.precio * p.cantidad;
+      total += subtotal;
       productosConPrecio.push({
-        producto: prodDB._id,
+        nombre: productoDB.nombre,
+        productoid: productoDB._id,
         cantidad: p.cantidad,
-        precioUnitario: prodDB.precio
+        precioUnitario: productoDB.precio,
+        subtotal
       });
     }
-    // Calculamos el total
-    let total = 0;
-    for (let i = 0; i < productosConPrecio.length; i++) {
-      total += productosConPrecio[i].cantidad * productosConPrecio[i].precioUnitario;
-    }
-    // Creamos la orden
-    const nuevaOrden = new Orden({
-      usuario: usuarioId,
+    const nuevaOrden = await Pedidos.create({
+      usuario,
+      metodoPago,
       productos: productosConPrecio,
-      total: total,
-      estado: "PENDIENTE"
+      total
     });
-    await nuevaOrden.save();
-    res.json(nuevaOrden);
+    res.status(201).json({
+      mensaje: "Pedido creado exitosamente",
+      orden: nuevaOrden
+    });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al crear orden", error: error.message });
+    next(error);
   }
 };
+
 // Obtener todas las órdenes con datos de usuario
-export const obtenerOrdenes = async (req, res) => {
+export const obtenerOrdenes = async (req, res, next) => {
   try {
-    const ordenes = await Orden.find().populate("usuario", "nombre email");
-    res.json(ordenes);
+    const pedidos = await Pedido.find().populate("usuario", "nombre email");
+    res.status(200).json(pedidos);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener órdenes", error });
+    next(error);
   }
 };
 
 // Obtener pedidos de un usuario específico
-export const obtenerOrdenesPorUsuario = async (req, res) => {
+export const obtenerOrdenesPorUsuario = async (req, res, next) => {
   try {
-    const ordenes = await Orden.find({ usuario: req.params.userId }).populate("usuario", "nombre email");
-    res.json(ordenes);
+    const pedidos = await Pedido.find({ usuario: req.params.userId }).populate("usuario", "nombre email");
+    res.json(pedidos);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener órdenes de usuario", error });
+    next(error);
   }
 };
 
-// Obtener stats: cantidad de pedidos por estado
-export const obtenerStatsOrdenes = async (req, res) => {
+export const obtenerStatsOrdenes = async (req, res, next) => {
   try {
-    const stats = await Orden.aggregate([
+    const stats = await Pedido.aggregate([
       { $group: { _id: "$estado", totalPedidos: { $sum: 1 } } }
     ]);
-    res.json(stats);
+    res.status(200).json(stats);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener estadísticas", error });
+    next(error);
   }
 };
 
 // Obtener una orden por ID
-export const obtenerOrdenPorId = async (req, res) => {
+export const obtenerOrdenPorId = async (req, res, next) => {
   try {
-    const orden = await Orden.findById(req.params.id).populate("usuario", "nombre email");
-    if (!orden) return res.status(404).json({ mensaje: "Orden no encontrada" });
-    res.json(orden);
+    const pedido = await Pedido.findById(req.params.id).populate("usuario", "nombre email");
+    if (!pedido) return res.status(404).json({ mensaje: "pedido no encontrado" });
+    res.status(200).json(pedido);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener orden", error });
+    next(error);
   }
 };
 
 // Actualizar orden
-export const actualizarOrden = async (req, res) => {
+export const actualizarOrden = async (req, res, next) => {
   try {
-    const orden = await Orden.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(orden);
+    const pedido = await Pedido.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json(pedido);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al actualizar orden", error });
+    next(error);
   }
 };
 
 // Actualizar estado
-export const actualizarEstadoOrden = async (req, res) => {
+export const actualizarEstadoOrden = async (req, res, next) => {
   try {
-    const orden = await Orden.findByIdAndUpdate(
+    const pedido = await Pedido.findByIdAndUpdate(
       req.params.id,
       { estado: req.body.estado },
       { new: true }
     );
-    res.json(orden);
+    res.status(200).json(pedido);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al actualizar estado", error });
+    next(error);
   }
 };
 
 // Eliminar orden
-export const eliminarOrden = async (req, res) => {
+export const eliminarOrden = async (req, res, next) => {
   try {
-    await Orden.findByIdAndDelete(req.params.id);
-    res.json({ mensaje: "Orden eliminada" });
+    const pedido = await Pedido.findByIdAndUpdate(
+          req.params.id,
+          { eliminado: true }, 
+          { new: true } 
+        );
+    if (!pedido){
+      return res.status(404).json({ mensaje: "Pedido no encontrado" });
+    }
+    res.status(200).json({ mensaje: "Pedido eliminado" });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al eliminar orden", error });
+    next(error);
   }
 };
