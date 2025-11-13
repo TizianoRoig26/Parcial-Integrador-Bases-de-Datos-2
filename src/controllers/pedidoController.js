@@ -1,53 +1,63 @@
 import Pedido from "../models/Pedido.js";
 import Producto from "../models/Producto.js";
+import Usuario from "../models/Usuarios.js";
+import Carrito from "../models/Carrito.js";
 
-export const crearOrden = async (req, res, next) => {
+export const crearOrden = async (req, res) => {
   try {
-    const { usuario, productos, metodoPago } = req.body;
+    const { usuarioId, metodoPago } = req.body;
 
-    if (!usuario || !productos || productos.length === 0 || !metodoPago) {
-      return res.status(400).json({ mensaje: "Faltan datos requeridos" });
+    const usuario = await Usuario.findById(usuarioId).populate("carrito");
+
+    if (!usuario) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
+
+    if (!usuario.carrito) {
+      return res.status(400).json({ mensaje: "El usuario no tiene un carrito asociado" });
+    }
+
+    const carrito = await Carrito.findOne({ usuarioId })
+    .populate("productos.producto", "precio");
+
+    if (!carrito) {
+      return res.status(404).json({ mensaje: "Carrito no encontrado" });
+    }
+
+    if (!carrito.productos || carrito.productos.length === 0) {
+      return res.status(400).json({ mensaje: "El carrito está vacío" });
+    }
+
+    const productosValidos = carrito.productos.filter(p => p.producto !== null);
 
     let total = 0;
-    const productosConPrecio = [];
-
-    for (const p of productos) {
-      const productoDB = await Producto.findById(p.producto);
-      if (!productoDB) {
-        throw new Error(`El producto con ID ${p.producto} no existe`);
-      }
-
-      const precioUnitario = productoDB.precio;
-      const subtotal = precioUnitario * p.cantidad;
+    const productosConPrecio = productosValidos.map(p => {
+      const subtotal = p.producto.precio * p.cantidad;
       total += subtotal;
-
-      productosConPrecio.push({
-        producto: productoDB._id,
+      return {
+        producto: p.producto._id,
         cantidad: p.cantidad,
-        precioUnitario
-      });
-    }
-
+        precioUnitario: p.producto.precio
+      };
+    });
     const nuevaOrden = await Pedido.create({
-      usuario,
+      usuario: usuario._id,
       productos: productosConPrecio,
       total,
       metodoPago
     });
 
     res.status(201).json({
-      mensaje: "Pedido creado",
-      orden: nuevaOrden
+      success: true,
+      data: nuevaOrden 
     });
 
   } catch (error) {
-    res.status(500).json({
-      mensaje: "Error al crear el pedido",
-      error: error.message
-    });
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al crear la orden", error: error.message });
   }
 };
+
 
 // Obtener todas las órdenes con datos de usuario
 export const obtenerOrdenes = async (req, res, next) => {
@@ -59,7 +69,7 @@ export const obtenerOrdenes = async (req, res, next) => {
   }
 };
 
-// Obtener pedidos de un usuario específico
+
 export const obtenerOrdenesPorUsuario = async (req, res, next) => {
   try {
     const pedidos = await Pedido.find({ usuario: req.params.userId }).populate("usuario", "nombre email");

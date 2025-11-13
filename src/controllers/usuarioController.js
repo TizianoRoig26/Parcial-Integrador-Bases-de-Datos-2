@@ -21,6 +21,7 @@ export const crearUsuario = async (req, res, next) => {
     usuario.contrasenia = contraseniaEncriptada;
     const carrito = await Carrito.create({ usuarioId: usuario._id }); 
     usuario.carrito = carrito._id;//carrito personal
+   // usuario.rol = "CLIENTE"; //aca ya no se pued enviar rol
     await usuario.save();
     const token = generarToken(usuario);
     res.status(201).json({

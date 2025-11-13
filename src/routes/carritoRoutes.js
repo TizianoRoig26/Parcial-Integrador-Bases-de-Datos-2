@@ -19,7 +19,7 @@ router.get("/:id", validarToken, obtenerCarrito);
 router.patch("/:id", validarToken, actualizarCarrito);
 router.patch("/eliminar/:id", validarToken, eliminarCarrito);
 router.get("/:usuarioId/total", validarToken, totalCarrito);
-router.get("/:usuarioId", validarToken, mostrarCarritoUsuario);
-router.put("/agregarProducto", validarToken, agregarProductosAlCarrito);
+router.get("/usuario/:usuarioId", validarToken, mostrarCarritoUsuario);
+router.put("/:carritoId/agregar-producto", validarToken, agregarProductosAlCarrito);
 
 export default router;

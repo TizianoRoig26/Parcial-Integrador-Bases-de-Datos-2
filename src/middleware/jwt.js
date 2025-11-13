@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const clave = process.env.JWT_SECRET || "clave-por-defecto";
+const clave = process.env.JWT_SECRET || "1234";
 
 // Generar token
 export const generarToken = (usuario) => {

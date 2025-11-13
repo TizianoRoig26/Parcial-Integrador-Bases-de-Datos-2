@@ -91,8 +91,9 @@ export const filtrarProductos = async (req, res, next) => {
       if (max) filtro.precio.$lte = Number(max);
     }
     if (marca) filtro.marca = marca;
+    filtro.eliminado = false;
   
-    const productos = await Producto.find(filtro).populate("categoria");
+    const productos = await Producto.find(filtro).populate("categoria", "nombre");
     res.json(productos);
   } catch (error) {
    next(error);

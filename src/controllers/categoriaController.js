@@ -18,7 +18,11 @@ export const crearCategoria = async (req, res, next) => {
 
 export const listarCategorias = async (req, res, next) => {
   try{
-    const categorias = await Categoria.find({ eliminado: false });
+    const categorias = await Categoria.find({ eliminado: false }).populate({
+      path: "productos",
+      match: { eliminado: { $ne: true } }, 
+      select: "nombre precio"
+    });
     res.status(200).json({
       success: true,
       data: categorias
@@ -31,7 +35,11 @@ export const listarCategorias = async (req, res, next) => {
 
 export const obtenerCategoria = async (req, res, next) => {
   try{
-    const categoria = await Categoria.findById(req.params.id);
+    const categoria = await Categoria.findById(req.params.id).populate({
+      path: "productos",
+      match: { eliminado: { $ne: true } }, 
+      select: "nombre precio"
+    });
     if (!categoria || categoria.eliminado) {
       return res.status(404).json({
       success: false,
